@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
 from openpyxl import Workbook
 
 def only_number(string):
@@ -27,7 +28,7 @@ driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () =>
 page = 1
 
 while True:
-    coupang_url = 'https://www.coupang.com/np/categories/383619?page='+str(page)
+    coupang_url = 'https://www.coupang.com/np/categories/498704?page='+str(page)
     driver.get(coupang_url)
 
     time.sleep(2)
@@ -51,8 +52,14 @@ while True:
         reviewCntTag = babyProductList.find_elements(By.CLASS_NAME, 'rating-total-count')
         reviewCnt = only_number(reviewCntTag[0].get_attribute('innerText')) if reviewCntTag else 0
 
-        priceTag    = babyProductList.find_element(By.CLASS_NAME, 'price-value')
-        if priceTag:
+        try:
+            priceTag = babyProductList.find_element(By.CLASS_NAME, 'price-value')
+            price = priceTag.get_attribute('innerText')
+            price = only_number(price) if price else 0
+        except NoSuchElementException:
+            price = 0
+
+        if productId:
             price       = priceTag.get_attribute('innerText')
             if price:
                 price = only_number(price)
